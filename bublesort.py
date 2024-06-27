@@ -27,7 +27,6 @@ while i < N-1:
             a[j], a[j+1] = a[j+1], a[j]
         j += 1
     i += 1
-
 print(a)
 
 
