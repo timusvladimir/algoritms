@@ -15,7 +15,7 @@ class Reversi:
             print("------------------------")
 
     def is_valid_move(self, row, col):
-        if self.board[row][col] != ' ':
+        if row < 0 or row >= 8 or col < 0 or col >= 8 or self.board[row][col] != ' ':
             return False
 
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
@@ -71,14 +71,22 @@ class Reversi:
         while not self.is_game_over():
             self.display_board()
             print(f"Current Player: {self.current_player}")
-            move = input("Enter your move (row col): ").strip().split()
-            row = int(move[0])
-            col = int(move[1])
 
-            if self.make_move(row, col):
-                self.current_player = 'W' if self.current_player == 'B' else 'B'
-            else:
-                print("Invalid move! Try again.")
+            while True:
+                try:
+                    move = input("Enter your move (row col): ").strip().split()
+                    row = int(move[0])
+                    col = int(move[1])
+
+                    if self.make_move(row, col):
+                        self.current_player = 'W' if self.current_player == 'B' else 'B'
+                        break
+                    else:
+                        print("Invalid move! Try again.")
+                except IndexError:
+                    print("Invalid move! Please enter two numbers between 0 and 7.")
+                except ValueError:
+                    print("Invalid input! Please enter two valid numbers.")
 
         self.display_board()
         print("Game Over!")
