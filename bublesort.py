@@ -42,3 +42,5 @@ a = [randint(1, 99) for n in range(10)]
 print(a)
 bubble(a)
 print(a)
+
+print(2014 ** 14)
