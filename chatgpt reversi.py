@@ -1,95 +1,72 @@
 class Reversi:
     def __init__(self):
-        self.board = [[' '] * 8 for _ in range(8)]
-        self.board[3][3] = 'W'
-        self.board[4][4] = 'W'
-        self.board[3][4] = 'B'
-        self.board[4][3] = 'B'
-        self.current_player = 'B'
+        self.board = [[0] * 8 for _ in range(8)]
+        self.board[3][3] = self.board[4][4] = 1
+        self.board[3][4] = self.board[4][3] = -1
+        self.current_player = 1
 
-    def display_board(self):
-        print("   0  1  2  3  4  5  6  7")
-        print("------------------------")
-        for i in range(8):
-            print(f"{i}| {' | '.join(self.board[i])} |")
-            print("------------------------")
+    def print_board(self):
+        for row in self.board:
+            print(' '.join(str(x) if x != 0 else '.' for x in row))
+        print()
 
-    def is_valid_move(self, row, col):
-        if row < 0 or row >= 8 or col < 0 or col >= 8 or self.board[row][col] != ' ':
+    def is_valid_move(self, x, y, player):
+        if self.board[x][y] != 0:
             return False
+        directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+        for dx, dy in directions:
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < 8 and 0 <= ny < 8 and self.board[nx][ny] == -player:
+                while 0 <= nx < 8 and 0 <= ny < 8 and self.board[nx][ny] == -player:
+                    nx += dx
+                    ny += dy
+                if 0 <= nx < 8 and 0 <= ny < 8 and self.board[nx][ny] == player:
+                    return True
+        return False
 
-        directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
-        valid = False
+    def make_move(self, x, y, player):
+        self.board[x][y] = player
+        directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+        for dx, dy in directions:
+            nx, ny = x + dx, y + dy
+            flip_list = []
+            while 0 <= nx < 8 and 0 <= ny < 8 and self.board[nx][ny] == -player:
+                flip_list.append((nx, ny))
+                nx += dx
+                ny += dy
+            if 0 <= nx < 8 and 0 <= ny < 8 and self.board[nx][ny] == player:
+                for fx, fy in flip_list:
+                    self.board[fx][fy] = player
 
-        for d in directions:
-            r, c = row + d[0], col + d[1]
-            if 0 <= r < 8 and 0 <= c < 8 and self.board[r][c] != ' ' and self.board[r][c] != self.current_player:
-                while 0 <= r < 8 and 0 <= c < 8:
-                    if self.board[r][c] == ' ':
-                        break
-                    elif self.board[r][c] == self.current_player:
-                        valid = True
-                        break
-                    r += d[0]
-                    c += d[1]
-                if valid:
-                    break
-
-        return valid
-
-    def make_move(self, row, col):
-        if not self.is_valid_move(row, col):
-            return False
-
-        self.board[row][col] = self.current_player
-
-        directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
-
-        for d in directions:
-            r, c = row + d[0], col + d[1]
-            to_flip = []
-
-            while 0 <= r < 8 and 0 <= c < 8:
-                if self.board[r][c] == ' ':
-                    break
-                elif self.board[r][c] == self.current_player:
-                    for flip_r, flip_c in to_flip:
-                        self.board[flip_r][flip_c] = self.current_player
-                    break
-                else:
-                    to_flip.append((r, c))
-                r += d[0]
-                c += d[1]
-
-        return True
-
-    def is_game_over(self):
-        # Implement logic to check if the game is over
-        pass
+    def has_valid_moves(self, player):
+        for x in range(8):
+            for y in range(8):
+                if self.is_valid_move(x, y, player):
+                    return True
+        return False
 
     def play(self):
-        while not self.is_game_over():
-            self.display_board()
-            print(f"Current Player: {self.current_player}")
+        while True:
+            self.print_board()
+            if not self.has_valid_moves(self.current_player):
+                print(f'Player {self.current_player} has no valid moves. Skipping turn.')
+                self.current_player = -self.current_player
+                if not self.has_valid_moves(-self.current_player):
+                    print('Game over!')
+                    break
+                continue
 
-            while True:
-                try:
-                    move = input("Enter your move (row col): ").strip().split()
-                    row = int(move[0])
-                    col = int(move[1])
+            x, y = map(int, input(f'Player {self.current_player}, enter your move (row and column): ').split())
+            if self.is_valid_move(x, y, self.current_player):
+                self.make_move(x, y, self.current_player)
+                self.current_player = -self.current_player
+            else:
+                print('Invalid move. Try again.')
 
-                    if self.make_move(row, col):
-                        self.current_player = 'W' if self.current_player == 'B' else 'B'
-                        break
-                    else:
-                        print("Invalid move! Try again.")
-                except IndexError:
-                    print("Invalid move! Please enter two numbers between 0 and 7.")
-                except ValueError:
-                    print("Invalid input! Please enter two valid numbers.")
+if __name__ == '__main__':
+    game = Reversi()
+    game.play()
 
-        self.display_board()
-        print("Game Over!")
 
 
 if __name__ == "__main__":
